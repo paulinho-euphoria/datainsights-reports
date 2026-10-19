@@ -1,0 +1,151 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter+Tight:wght@800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#FFFFFF}
+#info{position:fixed;inset:0}
+#info svg{display:block}
+#tip{position:fixed;z-index:5;pointer-events:none;background:#111;color:#FFFFFF;font:600 12px/1.45 'Inter',system-ui,sans-serif;padding:8px 10px;border-radius:2px;max-width:240px}
+#tip b{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:#FFFFFF}
+</style>
+
+<title>Temas · YouTube Premium</title></head><body>
+<div id="info"></div><div id="tip" hidden></div>
+<script>
+// Infográficos do listening — SVG responsivo que sempre cabe na janela (sem rolagem)
+(function(){
+const C={paper:'#FFFFFF',ink:'#111111',red:'#E8352C',blue:'#1F5BFF',grey:'#8A867D',rule:'#CFCAC0'};
+const DISP="'Inter Tight','Inter',system-ui,sans-serif", MONO="'IBM Plex Mono','DejaVu Sans Mono',monospace", BODY="'Inter',system-ui,sans-serif";
+const NS='http://www.w3.org/2000/svg';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function txt(p,x,y,s,o){const t=el('text',Object.assign({x,y},o),p);t.textContent=s;return t}
+function lines(p,x,y,arr,o,lh){arr.forEach((s,i)=>txt(p,x,y+i*lh,s,o))}
+
+window.renderInfo=function(D){
+  const root=document.getElementById('info'); const tip=document.getElementById('tip');
+  function draw(){
+    root.innerHTML='';
+    const W=window.innerWidth,H=window.innerHeight;
+    const svg=el('svg',{width:W,height:H,viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':D.aria},root);
+    el('rect',{x:0,y:0,width:W,height:H,fill:C.paper},svg);
+    const compact=W<620, tiny=H<380, mid=W<1200;
+    const pad=Math.max(14,Math.min(W*0.035,40));
+    const s=Math.max(0.62,Math.min(W/1100,H/700,1.25));
+    let y=pad;
+    const kf=Math.max(9,11*s);
+    const avail=W-2*pad;
+    {const ko={fill:C.red,'font-family':MONO,'font-size':kf,'font-weight':700,'letter-spacing':'0.04em'};
+     let kt=txt(svg,pad,y+kf,compact?D.kickerShort:D.kicker,ko);
+     if(kt.getComputedTextLength()>avail&&D.kickerShort&&!compact){kt.remove();kt=txt(svg,pad,y+kf,D.kickerShort,ko)}
+     const kl=kt.getComputedTextLength(); if(kl>avail)kt.setAttribute('font-size',kf*avail/kl*0.98);}
+    y+=kf+8*s;
+    let hf=Math.max(19,Math.min(44*s,W*(compact?0.075:0.045)));
+    const hl=compact?D.headShort:D.head;
+    {const probe=hl.map(t=>txt(svg,0,-100,t,{'font-family':DISP,'font-size':hf,'font-weight':900,'letter-spacing':'-0.02em'}));
+     const mw=Math.max(...probe.map(t=>t.getComputedTextLength())); probe.forEach(t=>t.remove()); if(mw>avail)hf=hf*avail/mw*0.98;}
+    txt(svg,pad,y+hf*0.9,hl[0],{fill:C.ink,'font-family':DISP,'font-size':hf,'font-weight':900,'letter-spacing':'-0.02em'});
+    y+=hf*1.08;
+    if(hl[1]){txt(svg,pad,y+hf*0.9,hl[1],{fill:C.grey,'font-family':DISP,'font-size':hf,'font-weight':900,'letter-spacing':'-0.02em'});y+=hf*1.08}
+    const showDeck=!tiny&&H>460;
+    if(showDeck){const df=Math.max(11,13*s);y+=6*s;
+      const src=compact?D.deckShort:D.deck, o={fill:C.ink,'font-family':BODY,'font-size':df}, out=[];
+      src.forEach(par=>{const words=par.split(' ');let cur='';const pr=txt(svg,0,-100,'',o);
+        words.forEach(w=>{const t=cur?cur+' '+w:w;pr.textContent=t;if(pr.getComputedTextLength()>avail&&cur){out.push(cur);cur=w}else cur=t});
+        if(cur)out.push(cur);pr.remove();});
+      lines(svg,pad,y+df,out,o,df*1.4);y+=df*1.4*out.length}
+    y+=10*s;
+    const kN=D.kpis.length, kw=(W-2*pad)/kN, nf=Math.max(18,Math.min(30*s,kw*0.28)), lf=Math.max(8.5,9.5*s);
+    D.kpis.forEach((k,i)=>{const x=pad+i*kw;
+      el('rect',{x,y,width:kw-10*s,height:3,fill:k.c},svg);
+      txt(svg,x,y+8+nf,k.n,{fill:k.c,'font-family':DISP,'font-size':nf,'font-weight':900,'letter-spacing':'-0.02em'});
+      txt(svg,x,y+8+nf+lf+5,(W<1000)?k.ls:k.l,{fill:C.ink,'font-family':MONO,'font-size':lf,'font-weight':700});});
+    y+=8+nf+lf+5+14*s;
+    const gf=Math.max(8.5,9.5*s); let gx=pad;
+    ((compact&&D.legendShort)?D.legendShort:D.legend).forEach(g=>{const t=txt(svg,gx,y+gf,g.t,{fill:g.c,'font-family':MONO,'font-size':gf,'font-weight':700});gx+=t.getComputedTextLength()+16*s});
+    if(D.axisNote&&W>=1000)txt(svg,W-pad,y+gf,D.axisNote,{fill:C.grey,'font-family':MONO,'font-size':gf*0.9,'text-anchor':'end'});
+    y+=gf+6*s;
+    const foot=Math.max(9,9*s)*2*1.5+8;
+    const evRoom=2*Math.max(8,9*s)*1.25+10;
+    const top=y+evRoom, bottom=H-pad-foot-Math.max(10,11*s)-6;
+    const left=pad+(D.yLeft?Math.max(26,34*s):0), right=W-pad-(D.yRight?Math.max(30,40*s):0);
+    const cw=right-left, ch=Math.max(60,bottom-top);
+    D.chart({svg,left,right,top,bottom:top+ch,cw,ch,s,compact,C,MONO,DISP,BODY,el,txt,tip,W,H});
+    const ff=Math.max(8,8.5*s);
+    {const fo={fill:C.grey,'font-family':MONO,'font-size':ff};let useShort=mid;
+     if(!useShort){const pr=txt(svg,0,-100,D.foot,fo);if(pr.getComputedTextLength()>avail)useShort=true;pr.remove()}
+     const fl=useShort?D.footShort:[D.foot];
+     const ts=fl.map((t,i)=>txt(svg,pad,H-pad-(fl.length-1-i)*ff*1.5,t,fo));
+     const mw=Math.max(...ts.map(t=>t.getComputedTextLength()));if(mw>avail)ts.forEach(t=>t.setAttribute('font-size',ff*avail/mw*0.98));}
+  }
+  draw(); let t; window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(draw,80)});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+};
+window.showTip=function(tip,html,x,y){tip.innerHTML=html;tip.hidden=false;const r=tip.getBoundingClientRect();let L=x+12,T=y-r.height-10;if(L+r.width>innerWidth-6)L=x-r.width-12;if(L<6)L=6;if(T<6)T=y+14;tip.style.left=L+'px';tip.style.top=T+'px'};
+})();
+</script>
+<script>
+function placeEvents(g,ev,xs,yTop,P,valY){
+  const f=Math.max(8,9*P.s), lh=f*1.25, ends=[-1e9,-1e9];
+  ev.forEach(e=>{const x=xs(e.i), lab=P.compact?e.short:e.long;
+    const w=lab.length*f*0.62; let r=1; if(x-w/2<ends[1]+8){r=0} if(r===0&&x-w/2<ends[0]+8){r=1}
+    ends[r]=x+w/2; const ty=yTop-(r?0:lh);
+    let ax='middle',tx=x; if(x+w/2>P.W-6){ax='end';tx=x+4} if(x-w/2<6){ax='start';tx=x-4}
+    P.el('line',{x1:x,x2:x,y1:ty+3,y2:Math.max(ty+4,valY(e.i)-5),stroke:P.C.ink,'stroke-width':0.7,'stroke-dasharray':'1 2'},g);
+    P.txt(g,tx,ty,lab,{fill:P.C.ink,'font-family':P.MONO,'font-size':f,'font-weight':700,'text-anchor':ax});
+  });
+}
+</script>
+<script>
+// DADOS: % das evidências de cada grupo que tocam cada tema (codificação manual, 124 evidências de fóruns, Reddit, comentários e Reclame Aqui)
+const temas=['PREÇO','FAMÍLIA','ADBLOCK','TV','ANÚNCIOS','ANÚNCIO PAGO','MUSIC','HÁBITO','FALHAS'];
+const temasS=['R$','FAM','ADB','TV','ADS','PAGO','MUS','HÁB','FAL'];
+const T2=[['PREÇO E','REAJUSTE'],['PLANO','FAMÍLIA'],['ADBLOCK','E APPS'],['ANÚNCIOS','NA TV'],['EXCESSO DE','ANÚNCIOS'],['ANÚNCIO','PAGANDO'],['MUSIC E','SPOTIFY'],['HÁBITO E','VALOR'],['FALHAS E','COBRANÇA']];
+const DESC=['preço, reajuste, "ganância", custo','dividir, regra da mesma casa, suspensão, Kotas','ReVanced, SmartTube, Brave, uBlock, DNS','anúncio não pulável e pausa na smart TV','volume e frequência de anúncios no grátis','patrocínio, anúncio no feed, busca ou Shorts','YouTube Music no pacote, troca do Spotify','"virou item essencial", "vale cada centavo"','cobrança de operadora, suporte, bugs'];
+const PANELS=[
+ {t:'BRASIL',c:'#1F5BFF',rows:['QUEM ASSINA','QUEM NÃO ASSINA OU SAIU'],rs:['ASSINA','NÃO ASSINA'],M:[[26,39,3,3,13,6,6,13,23],[11,11,78,28,6,6,6,0,6]],N:[31,18]},
+ {t:'GLOBAL · REDDIT E COMENTÁRIOS',c:'#E8352C',rows:['QUEM ASSINA','QUEM NÃO ASSINA OU SAIU'],rs:['ASSINA','NÃO ASSINA'],M:[[45,3,3,6,6,29,19,16,10],[38,0,38,15,0,8,0,8,8]],N:[31,13]}];
+renderInfo({aria:'Matriz de temas das falas sobre YouTube Premium, separando quem assina e quem não assina, no Brasil e no recorte global',
+ kicker:'LISTENING / YOUTUBE PREMIUM · HEAVY USERS / DO QUE SE FALA QUANDO O ASSUNTO É PREMIUM', kickerShort:'YT PREMIUM / TEMAS',
+ head:['No Brasil, quem paga fala do plano família.','Quem não paga, de adblock.'], headShort:['Quem paga fala de família.','Quem não paga, de adblock.'],
+ deck:['Brasil: 39% das falas de assinantes tratam do plano família (dividir, regra da mesma casa); 78% das de não assinantes citam adblock ou apps alternativos.','Global: entre assinantes, preço domina (45%) e 29% reclamam de anúncio mesmo pagando. Na TV, o adblock é difícil; ali o Premium vira saída.'],
+ deckShort:['Brasil: assinantes falam de família (39%);','não assinantes, de adblock (78%).'],
+ kpis:[{n:'124',l:'EVIDÊNCIAS CLASSIFICADAS',ls:'EVIDÊNCIAS',c:'#111111'},{n:'67',l:'BRASIL',ls:'BRASIL',c:'#1F5BFF'},{n:'57',l:'GLOBAL (REDDIT E COMENTÁRIOS)',ls:'GLOBAL',c:'#E8352C'},{n:'93',l:'DE QUEM ASSINA OU NÃO ASSINA',ls:'ASSINA OU NÃO',c:'#8A867D'}],
+ legend:[{t:'CADA NÚMERO = % DAS FALAS DO GRUPO QUE TOCAM O TEMA',c:'#111111'}],
+ legendShort:[{t:'% DAS FALAS DO GRUPO',c:'#111111'}],
+ axisNote:'', yLeft:false, yRight:false,
+ foot:'FONTE: EUPHORIA CREATIVE · comentários da comunidade Tecnoblog, Reclame Aqui, TabNews, X, Reddit (via matérias que citam os threads) e leitores de sites de tecnologia. Codificação manual; uma fala pode ter mais de um tema. Amostra qualitativa, n pequeno.',
+ footShort:['FONTE: EUPHORIA · fóruns, Reclame Aqui, Reddit (via matérias)','e comentários de leitores. Codificação manual; n pequeno.'],
+ chart(P){
+  const {svg,left,right,top,bottom,s,compact,C,MONO,DISP,BODY,el,txt,tip,W}=P;
+  const g=el('g',{},svg); const af=Math.max(8.5,9*s);
+  const stack=W<820||(W<1000&&(bottom-top)>330); const gap=stack?16:28;
+  const pw=stack?(right-left):(right-left-gap)/2, ph=stack?(bottom-top-gap)/2:(bottom-top);
+  const mix=(hex,t)=>{const n=parseInt(hex.slice(1),16),r=n>>16,gg=(n>>8)&255,b=n&255;const m=(c)=>Math.round(255+(c-255)*t);return `rgb(${m(r)},${m(gg)},${m(b)})`};
+  PANELS.forEach((Pn,k)=>{
+    const x0=left+(stack?0:k*(pw+gap)), y0=top+(stack?k*(ph+gap):0);
+    txt(g,x0,y0+af,Pn.t,{fill:Pn.c,'font-family':MONO,'font-size':af*1.05,'font-weight':700});
+    const labW=Math.min(compact?66:112,pw*0.24), gx=x0+labW, gw=pw-labW, cw=gw/temas.length;
+    const two=cw>=40, hy=y0+af*2.9, gy=hy+(two?af*1.4:af*0.6)+6, rh=Math.min((y0+ph-gy)/Pn.rows.length, af*9);
+    temas.forEach((t,j)=>{const cx=gx+cw*j+cw/2; const o={fill:C.grey,'font-family':MONO,'font-size':(cw<56?af*0.68:af*0.78),'font-weight':700,'text-anchor':'middle'};
+      if(two){txt(g,cx,hy,T2[j][0],o);txt(g,cx,hy+af*1.05,T2[j][1],o)} else txt(g,cx,hy+af*0.6,(cw>=40?temas:temasS)[j],o)});
+    Pn.rows.forEach((p,i)=>{const ry=gy+rh*i, cy=ry+rh/2; const lf=Math.min(af,rh*0.4);
+      const lab=(pw<520||compact)?Pn.rs[i]:p; const words=lab.split(' ');
+      if(words.length>2&&!compact){txt(g,x0,cy-lf*0.9,words.slice(0,2).join(' '),{fill:C.ink,'font-family':MONO,'font-size':lf,'font-weight':700});txt(g,x0,cy+lf*0.3,words.slice(2).join(' '),{fill:C.ink,'font-family':MONO,'font-size':lf,'font-weight':700})}
+      else txt(g,x0,cy-lf*0.2,lab,{fill:C.ink,'font-family':MONO,'font-size':lf,'font-weight':700});
+      el('rect',{x:x0-6,y:cy-af*1.2,width:3,height:af*2.6,fill:i?'#111111':Pn.c},g);
+      txt(g,x0,cy+af*1.5,'n = '+Pn.N[i],{fill:C.grey,'font-family':MONO,'font-size':af*0.8});
+      const mx=Math.max(...Pn.M[i]);
+      temas.forEach((t,j)=>{const v=Pn.M[i][j], cx=gx+cw*j;
+        const tt=Math.min(1,v/60); const fill=v?mix(Pn.c,0.08+0.92*tt):'#F4F3F0';
+        el('rect',{x:cx+1,y:ry+1,width:cw-2,height:rh-2,rx:3,fill},g);
+        const bold=v===mx&&v>=10;
+        txt(g,cx+cw/2,cy+Math.min(af,rh*0.6)*0.4,v+'%',{fill:tt>0.45?'#FFFFFF':(v?C.ink:'#B5B1A8'),'font-family':DISP,'font-size':Math.min(af*(bold?1.5:1.15),cw*0.36,rh*0.5),'font-weight':bold?900:600,'text-anchor':'middle'});
+        const hit=el('rect',{x:cx,y:ry,width:cw,height:rh,fill:'transparent'},g);
+        const h=e=>{const q=e.touches?e.touches[0]:e;showTip(tip,`<b>${Pn.t.split(' ·')[0]} · ${p}</b><br>${T2[j].join(' ')}: ${v}% de ${Pn.N[i]} falas<br>${DESC[j]}`,q.clientX,q.clientY)};
+        hit.addEventListener('mousemove',h);hit.addEventListener('touchstart',h,{passive:true});hit.addEventListener('mouseleave',()=>tip.hidden=true)});
+    });
+  });
+ }});
+</script>
+</body></html>
